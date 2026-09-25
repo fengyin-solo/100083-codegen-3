@@ -33,3 +33,26 @@ body { margin: 0; background: #f6f8fb; color: #1f2937; }
 .link { border: none; background: none; color: var(--brand); cursor: pointer; padding: 0; }
 .page-foot { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--muted); }
 .error-text { color: #b42318; }
+
+/* 箱区堆存全景 */
+.page-actions { display: flex; gap: 8px; align-items: center; }
+.view-switch { display: inline-flex; gap: 6px; }
+.panorama-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.panorama-cell { display: flex; flex-direction: column; gap: 6px; text-align: left; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; cursor: pointer; font: inherit; color: inherit; }
+.panorama-cell:hover { border-color: var(--brand); }
+.panorama-cell.selected { border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
+.panorama-cell.missing { background: #fafbfc; border-style: dashed; color: var(--muted); }
+.cell-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.cell-tier { flex-shrink: 0; font-size: 12px; color: var(--muted); border: 1px solid var(--border); border-radius: 10px; padding: 0 8px; }
+.cell-name { font-size: 12px; color: var(--muted); }
+.cell-figures { display: flex; gap: 18px; }
+.figure { font-size: 12px; color: var(--muted); }
+.figure em { font-style: normal; font-size: 20px; font-weight: 600; color: #1f2937; margin-right: 3px; }
+.figure.overdue em { color: #b42318; }
+.figure.overdue.quiet em { color: #94a3b8; }
+.cell-missing { font-size: 12px; color: var(--muted); }
+.panorama-detail { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+.detail-head { display: flex; justify-content: space-between; align-items: center; }
+.detail-head h3 { margin: 0; font-size: 14px; }
+.detail-summary { color: var(--muted); font-size: 12px; margin: 6px 0 10px; }
+.overdue-tag { color: #b42318; border: 1px solid #b42318; border-radius: 10px; padding: 0 8px; font-size: 12px; }

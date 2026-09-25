@@ -30,6 +30,28 @@ def list_entries(
     return PageResult(items=items, total=total, page=page, size=size)
 
 
+@router.get("/panorama")
+def panorama() -> dict[str, Any]:
+    """箱区堆存全景：按堆放层数排好的格子数据，合计口径与名单一致。"""
+    return service.build_panorama()
+
+
+@router.get("/panorama/{block_code}")
+def panorama_block(block_code: str) -> dict[str, Any]:
+    """单个箱区的箱号与对应堆存单；箱区不存在时给出可读的错误说明。"""
+    detail = service.block_detail(block_code)
+    if detail is None:
+        raise HTTPException(status_code=404, detail=f"箱区 {block_code} 不存在或已归档")
+    return detail
+
+
+@router.get("/export")
+def export_entries() -> dict[str, Any]:
+    """导出堆存记录清单：返回当前过滤条件下的全量数据。"""
+    items, total = service.list_entries(page=1, size=10000)
+    return {"module": "yardstore", "total": total, "items": items}
+
+
 @router.get("/{entry_id}", response_model=dict)
 def get_entry(entry_id: int) -> dict:
     """读取单条堆存单明细；不存在时给出可读的错误说明。"""
@@ -56,10 +78,3 @@ def run_action(entry_id: int, payload: EntryPayload) -> ActionResult:
     if entry is None:
         return ActionResult(ok=False, message=message)
     return ActionResult(ok=True, message=message, entry=entry)
-
-
-@router.get("/export")
-def export_entries() -> dict[str, Any]:
-    """导出堆存记录清单：返回当前过滤条件下的全量数据。"""
-    items, total = service.list_entries(page=1, size=10000)
-    return {"module": "yardstore", "total": total, "items": items}
