@@ -20,14 +20,48 @@ STATUSES = ["待进场", "堆存中", "待提离", "已提离"]
 def list_entries(
     keyword: str | None = Query(default=None, description="按堆存单号检索"),
     status: str | None = Query(default=None, description="待进场、堆存中、待提离、已提离"),
+    yard_no: str | None = Query(default=None, description="按箱区编号精确过滤，与全景格子同口径"),
+    in_yard: bool = Query(default=False, description="只看仍在场的箱（堆存中、待提离）"),
     page: int = 1,
     size: int = 20,
 ) -> PageResult[dict]:
-    """按堆存单号与状态过滤堆存记录列表；没有数据时返回空页，不报错。"""
+    """按堆存单号、状态、箱区编号过滤堆存记录列表；没有数据时返回空页，不报错。"""
     if size > 200:
         raise HTTPException(status_code=400, detail="每页最多 200 条，请缩小分页范围")
-    items, total = service.list_entries(keyword=keyword, status=status, page=page, size=size)
+    items, total = service.list_entries(
+        keyword=keyword,
+        status=status,
+        yard_no=yard_no,
+        in_yard=in_yard,
+        page=page,
+        size=size,
+    )
     return PageResult(items=items, total=total, page=page, size=size)
+
+
+@router.get("/panorama")
+def panorama() -> dict[str, Any]:
+    """箱区堆存全景：按堆放层数排列的格子底图，每格给出当前堆存量与超期箱数量。"""
+    return service.panorama()
+
+
+@router.get("/yard-detail")
+def yard_detail(yard_no: str = Query(..., description="箱区编号")) -> dict[str, Any]:
+    """单个箱区的全景明细：这一区的箱号、贝位与对应堆存单。
+
+    箱区档案暂时缺失时不报错，返回的格子会用 missing 标明缺什么。
+    """
+    cell = service.yard_detail(yard_no)
+    if cell is None:
+        raise HTTPException(status_code=400, detail="请提供箱区编号")
+    return cell
+
+
+@router.get("/export")
+def export_entries() -> dict[str, Any]:
+    """导出堆存记录清单：返回当前过滤条件下的全量数据。"""
+    items, total = service.list_entries(page=1, size=10000)
+    return {"module": "yardstore", "total": total, "items": items}
 
 
 @router.get("/{entry_id}", response_model=dict)
@@ -56,10 +90,3 @@ def run_action(entry_id: int, payload: EntryPayload) -> ActionResult:
     if entry is None:
         return ActionResult(ok=False, message=message)
     return ActionResult(ok=True, message=message, entry=entry)
-
-
-@router.get("/export")
-def export_entries() -> dict[str, Any]:
-    """导出堆存记录清单：返回当前过滤条件下的全量数据。"""
-    items, total = service.list_entries(page=1, size=10000)
-    return {"module": "yardstore", "total": total, "items": items}
